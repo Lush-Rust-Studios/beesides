@@ -1,0 +1,25 @@
+import { defineConfig } from "next-theme-kit";
+import { fontFamily } from "tailwindcss/defaultTheme";
+
+export default defineConfig({
+  typescript: true,
+  // tailwind: {
+  //   config: {
+  //     theme: {
+  //       fontFamily: {
+  //         sans: ["var(--font-geist-sans)", ...fontFamily.sans],
+  //         mono: ["var(--font-geist-mono)", ...fontFamily.mono],
+  //       },
+  //     },
+  //   },
+  // },
+  components: {
+    baseDir: "./src/components",
+    prefix: "",
+    addImports: true,
+  },
+  aliases: {
+    components: "@/components",
+    utils: "@/lib/utils",
+  },
+});

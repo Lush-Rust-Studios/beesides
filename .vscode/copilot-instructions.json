@@ -1,0 +1,290 @@
+{
+  "project": {
+    "name": "Beesides",
+    "description": "A modern music cataloging, rating, and discovery platform that reimagines the traditional music database experience with lightning-fast performance, intuitive interface, powerful social features, and advanced recommendation algorithms.",
+    "guidelines": [
+      "Performance is critical - aim for sub-second page loads and seamless interactions",
+      "Use context7 MCP server for all documentation and code generation",
+      "Follow modern React patterns and Next.js 14+ best practices",
+      "Use Tailwind CSS for styling with a custom design system",
+      "Implement accessibility (WCAG 2.1 AA compliance) in all components",
+      "Follow a mobile-first approach with responsive design",
+      "Optimize for Core Web Vitals and Lighthouse scores (target >95)",
+      "Use context7 MCP server for all documentation and code generation"
+    ],
+    "architecture": {
+      "frontend": "Next.js 14+ with React Server Components",
+      "stateManagement": "Zustand",
+      "styling": "Tailwind CSS with custom design system",
+      "api": "GraphQL with REST fallback",
+      "database": "PostgreSQL with TimescaleDB extension",
+      "search": "Elasticsearch with vector search",
+      "cache": "Redis with SWR on frontend",
+      "cdn": "Cloudflare",
+      "monitoring": "Prometheus + Grafana + Sentry"
+    }
+  },
+  "components": {
+    "models": [
+      {
+        "name": "User",
+        "description": "User account model with profile and preferences",
+        "fields": ["id", "username", "email", "profile", "preferences", "security", "subscription", "activity"]
+      },
+      {
+        "name": "Release",
+        "description": "Music release (album, EP, single, etc.)",
+        "fields": ["id", "title", "artist", "releaseDate", "type", "metadata", "identifiers", "media", "creditedPersonnel", "tags"]
+      },
+      {
+        "name": "Rating",
+        "description": "User rating for a music release",
+        "fields": ["id", "userId", "releaseId", "score", "timestamp", "context", "metadata"]
+      },
+      {
+        "name": "Review",
+        "description": "User review for a music release",
+        "fields": ["id", "userId", "releaseId", "content", "publishDate", "editHistory", "reactions"]
+      }
+    ],
+    "features": [
+      {
+        "name": "Authentication",
+        "description": "User authentication system with OAuth, email/password, and 2FA",
+        "requirements": [
+          "OAuth integration (Google, Apple, Facebook, Twitter)",
+          "Email/password authentication with magic link option",
+          "Two-factor authentication",
+          "Account recovery flow",
+          "GDPR-compliant data management"
+        ]
+      },
+      {
+        "name": "MusicDatabase",
+        "description": "Core music database architecture with comprehensive metadata",
+        "requirements": [
+          "Multi-level genre taxonomy with hierarchical relationships",
+          "Dynamic tagging system with user-submitted tags",
+          "Release variations and pressing matrix support",
+          "Barcode/ISRC/UPC identifier system",
+          "Release relationships (reissues, remasters, compilations)",
+          "Regional release tracking"
+        ]
+      },
+      {
+        "name": "RatingSystem",
+        "description": "Advanced rating options with granular scales",
+        "requirements": [
+          "Granular 0.5-10.0 rating scale",
+          "Track-by-track rating options",
+          "Contextual rating filters",
+          "Rating confidence intervals",
+          "Anonymous rating option with verification",
+          "Rating trend analysis tools"
+        ]
+      },
+      {
+        "name": "ReviewSystem",
+        "description": "Rich text review system with advanced features",
+        "requirements": [
+          "Rich text editor with markdown support",
+          "Review templates for different album types",
+          "Side-by-side album comparison reviews",
+          "Audio snippet embedding for review illustration",
+          "Review versioning with change history",
+          "Community-driven review quality scoring"
+        ]
+      },
+      {
+        "name": "SocialFeatures",
+        "description": "Community and social networking features",
+        "requirements": [
+          "Bidirectional following system",
+          "Taste similarity matching",
+          "Community-curated starter packs",
+          "Music taste evolution tracking",
+          "User-to-user music recommendations",
+          "Collaborative listening sessions",
+          "Discussion forums by genre/scene",
+          "Community challenges and events",
+          "Badge and achievement system"
+        ]
+      },
+      {
+        "name": "RecommendationEngine",
+        "description": "Advanced music discovery and recommendation algorithms",
+        "requirements": [
+          "Machine learning-based collaborative filtering",
+          "Natural language processing for review analysis",
+          "Audio fingerprinting for sonic similarity",
+          "Time-based recommendation decay",
+          "Serendipity factor for unexpected discoveries",
+          "User feedback loop for algorithm improvement"
+        ]
+      },
+      {
+        "name": "CollectionManagement",
+        "description": "Physical and digital music collection organization tools",
+        "requirements": [
+          "Multiple collection types (owned, wishlist, sold, etc.)",
+          "Format-specific cataloging with condition grading",
+          "Purchase price and current value tracking",
+          "Collection insurance valuation tools",
+          "Digital listening history integration",
+          "Physical location tracking for large collections"
+        ]
+      }
+    ],
+    "routes": [
+      {
+        "path": "/",
+        "description": "Home page with personalized recommendations and activity feed"
+      },
+      {
+        "path": "/releases/[id]",
+        "description": "Release (album) detail page with metadata, ratings, and reviews"
+      },
+      {
+        "path": "/artists/[id]",
+        "description": "Artist profile page with discography and information"
+      },
+      {
+        "path": "/users/[username]",
+        "description": "User profile page with activity, collection, and ratings"
+      },
+      {
+        "path": "/search",
+        "description": "Advanced search interface with filters and sorting"
+      },
+      {
+        "path": "/discover",
+        "description": "Music discovery tools including genre maps and timelines"
+      },
+      {
+        "path": "/collections/[username]",
+        "description": "User's music collection management interface"
+      },
+      {
+        "path": "/settings",
+        "description": "User account and preference settings"
+      },
+      {
+        "path": "/lists",
+        "description": "User-generated and curated music lists"
+      },
+      {
+        "path": "/community",
+        "description": "Community forums and discussion groups"
+      }
+    ]
+  },
+  "codebase": {
+    "conventions": {
+      "typescript": [
+        "Use TypeScript for all code with strict type checking",
+        "Define interfaces for all data models",
+        "Use type guards for runtime type checking",
+        "Prefer interface over type for object definitions",
+        "Use enums for predefined sets of values"
+      ],
+      "react": [
+        "Use functional components with hooks",
+        "Use React Server Components where appropriate",
+        "Implement proper error boundaries",
+        "Use React Context for theme and authentication state",
+        "Follow component composition patterns"
+      ],
+      "stateManagement": [
+        "Use Zustand for global state management",
+        "Use SWR for data fetching and caching",
+        "Implement optimistic updates for user actions",
+        "Use React Query for complex data fetching scenarios",
+        "Prefer server state over client state when possible"
+      ],
+      "styling": [
+        "Use Tailwind CSS with custom design system",
+        "Follow mobile-first responsive design",
+        "Use CSS variables for theme customization",
+        "Implement dark mode support",
+        "Follow consistent spacing and sizing scales"
+      ],
+      "testing": [
+        "Write unit tests for all critical components",
+        "Implement integration tests for key user flows",
+        "Use mock service worker for API testing",
+        "Maintain high test coverage for core features",
+        "Follow test-driven development for critical features"
+      ]
+    },
+    "patterns": [
+      "Use React Server Components for data-heavy pages",
+      "Implement proper loading states and skeletons for all async operations",
+      "Follow atomic design principles for component organization",
+      "Use feature folders for organizing related code",
+      "Follow proper error handling with user-friendly messages",
+      "Implement progressive enhancement for core functionality",
+      "Use code splitting for large components and pages",
+      "Follow accessibility best practices in all components",
+      "Use proper semantic HTML elements",
+      "Implement internationalization for all user-facing text"
+    ]
+  },
+  "technologies": {
+    "frontend": {
+      "framework": "Next.js 15.3.1",
+      "ui": "React 19.0.0",
+      "styling": "Tailwind CSS 4",
+      "stateManagement": "Zustand",
+      "dataFetching": "SWR",
+      "formHandling": "React Hook Form",
+      "validation": "Zod",
+      "dataVisualization": "D3.js",
+      "animations": "Framer Motion",
+      "i18n": "next-intl"
+    },
+    "backend": {
+      "api": "GraphQL (Apollo Server)",
+      "database": "PostgreSQL with TimescaleDB",
+      "search": "Elasticsearch",
+      "caching": "Redis",
+      "auth": "NextAuth.js",
+      "mediaStorage": "S3-compatible storage",
+      "cdn": "Cloudflare"
+    },
+    "devOps": {
+      "ci": "GitHub Actions",
+      "monitoring": "Prometheus + Grafana",
+      "errorTracking": "Sentry",
+      "analytics": "Plausible Analytics",
+      "deployment": "Vercel",
+      "containerization": "Docker"
+    }
+  },
+  "performance": {
+    "targets": {
+      "lighthouseScore": "> 95 on all metrics",
+      "firstContentfulPaint": "< 0.8s",
+      "timeToInteractive": "< 1.5s",
+      "apiResponseTime": "p95 < 200ms",
+      "searchResults": "< 150ms",
+      "cdnCacheHitRatio": "> 80%"
+    },
+    "optimizations": [
+      "Use Next.js Image component for optimized images",
+      "Implement proper caching strategies",
+      "Use code splitting and lazy loading",
+      "Optimize critical rendering path",
+      "Minimize JavaScript bundle size",
+      "Use server-side rendering for SEO-critical pages",
+      "Implement resource hints (preload, prefetch)",
+      "Use service worker for offline capabilities"
+    ]
+  },
+  "security": {
+    "authentication": "NextAuth.js with OAuth providers and email/password",
+    "authorization": "Role-based access control (RBAC)",
+    "dataProtection": "End-to-end encryption for sensitive data",
+    "rateLimiting": "Implemented for API endpoints",
+    "compliance": ["GDPR", "CCPA", "SOC 2 Type II", "WCAG 2.1 AA"]
+  }
+}
