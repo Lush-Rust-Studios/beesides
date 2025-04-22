@@ -34,19 +34,28 @@ export async function signUp(email: string, password: string, username: string) 
     return { error: 'Signup failed' };
   }
   
-  // Create a profile record for the new user immediately
-  const { error: profileError } = await supabase.from('profiles').insert({
-    id: authData.user.id,
-    username,
-    display_name: username,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  });
+  // Create a profile record for the new user using server-side API
+  try {
+    const response = await fetch('/api/auth/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: authData.user.id,
+        username,
+        display_name: username,
+      }),
+    });
 
-  if (profileError) {
-    // If we failed to create the profile, we should log this
-    console.error('Error creating profile:', profileError);
-    return { error: profileError.message };
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error creating profile:', errorData);
+      return { error: errorData.error || 'Failed to create user profile' };
+    }
+  } catch (error) {
+    console.error('Error creating profile:', error);
+    return { error: 'Failed to create user profile' };
   }
 
   // Return success, no verification needed
