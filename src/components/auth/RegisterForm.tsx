@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { signUp, verifyEmail } from "@/lib/supabase/auth";
+import { signUp } from "@/lib/supabase/auth";
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -12,14 +12,10 @@ export function RegisterForm({ onSuccess, onLoginClick }: RegisterFormProps) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [verificationSent, setVerificationSent] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setMessage(null);
     setIsLoading(true);
 
     // Validate password strength
@@ -34,11 +30,11 @@ export function RegisterForm({ onSuccess, onLoginClick }: RegisterFormProps) {
       return;
     }
 
-    const {
-      user,
-      error: signUpError,
-      message: signUpMessage,
-    } = await signUp(email, password, username);
+    const { user, error: signUpError } = await signUp(
+      email,
+      password,
+      username
+    );
 
     setIsLoading(false);
 
@@ -48,91 +44,10 @@ export function RegisterForm({ onSuccess, onLoginClick }: RegisterFormProps) {
     }
 
     if (user) {
-      // Set verification sent to true to show verification code input
-      setVerificationSent(true);
-      setMessage(
-        signUpMessage || "Please check your email for a verification code"
-      );
-    }
-  };
-
-  const handleVerification = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-
-    if (!verificationCode || verificationCode.trim() === "") {
-      setError("Please enter the verification code from your email");
-      setIsLoading(false);
-      return;
-    }
-
-    const { success, error: verifyError } = await verifyEmail(
-      email,
-      verificationCode
-    );
-
-    setIsLoading(false);
-
-    if (verifyError) {
-      setError(verifyError);
-      return;
-    }
-
-    if (success) {
+      // User is automatically signed in, proceed to success callback
       onSuccess?.();
     }
   };
-
-  if (verificationSent) {
-    return (
-      <form onSubmit={handleVerification} className="space-y-4">
-        {error && (
-          <div className="p-3 bg-red-100 border border-red-300 text-red-800 rounded-[4px] text-sm">
-            {error}
-          </div>
-        )}
-        {message && (
-          <div className="p-3 bg-green-100 border border-green-300 text-green-800 rounded-[4px] text-sm">
-            {message}
-          </div>
-        )}
-        <div>
-          <label className="block font-mono text-sm mb-2">
-            VERIFICATION CODE
-          </label>
-          <input
-            type="text"
-            required
-            className="w-full p-3 border-2 border-black rounded-[4px] font-mono focus:outline-none focus:border-[#FF3B3B]"
-            placeholder="Enter code from your email"
-            value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value)}
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-[#FF3B3B] text-white p-3 rounded-[4px] font-bold hover:translate-x-1 hover:-translate-y-1 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0"
-        >
-          {isLoading ? "VERIFYING..." : "VERIFY EMAIL"}
-        </button>
-        <div className="text-center pt-4">
-          <span className="font-mono text-sm">DIDN'T RECEIVE A CODE? </span>
-          <button
-            type="button"
-            onClick={() => {
-              setVerificationSent(false);
-              setVerificationCode("");
-            }}
-            className="font-bold hover:text-[#FF3B3B] transition"
-          >
-            TRY AGAIN
-          </button>
-        </div>
-      </form>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -197,3 +112,5 @@ export function RegisterForm({ onSuccess, onLoginClick }: RegisterFormProps) {
     </form>
   );
 }
+
+export default RegisterForm;

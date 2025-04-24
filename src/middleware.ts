@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/middleware';
 
 // List of paths that don't require authentication
-const publicPaths = ['/', '/sign-in', '/sign-up', '/forgot-password', '/reset-password'];
+const publicPaths = ['/', '/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/profile'];
+
+// Special paths that should be accessible without authentication but excluded from middleware handling
+const specialPaths = ['/api', '/_next', '/static', '/favicon.ico'];
+
+// Function to check if a path is a profile page
+const isProfilePath = (path: string) => path === '/profile' || path.startsWith('/profile/');
 
 /**
  * Middleware to verify authentication on protected routes
@@ -11,8 +17,10 @@ const publicPaths = ['/', '/sign-in', '/sign-up', '/forgot-password', '/reset-pa
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if the path is public
-  if (publicPaths.some(path => pathname === path || pathname.startsWith('/api/')) || 
+  // Check if the path is public, profile path, or special
+  if (publicPaths.includes(pathname) || 
+      isProfilePath(pathname) ||
+      specialPaths.some(path => pathname.startsWith(path)) ||
       pathname.includes('.')) {
     return NextResponse.next();
   }

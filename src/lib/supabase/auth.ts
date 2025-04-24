@@ -7,13 +7,19 @@
 import { supabase } from './client';
 import { Profile } from '@/types/database';
 import { useAuthStore } from './session';
+import { createLogger } from '@/lib/utils/logger';
+
+// Create a dedicated logger for auth operations
+const logger = createLogger('auth:operations');
 
 /**
  * Sign up a new user with email and password
- * Requires email verification before the account is active
+ * No email verification required - user is automatically signed in
  */
 export async function signUp(email: string, password: string, username: string) {
-  // Sign up without requiring email verification
+  logger.info('User signup attempt', { email, username });
+  
+  // Sign up without email verification
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
@@ -22,17 +28,24 @@ export async function signUp(email: string, password: string, username: string) 
         username,
         display_name: username,
       },
-      // No email verification needed - emailRedirectTo removed
+      emailRedirectTo: undefined,
     }
   });
 
   if (authError) {
+    logger.error('Signup failed', { email, error: authError.message });
     return { error: authError.message };
   }
 
   if (!authData.user) {
+    logger.error('Signup failed - no user returned', { email });
     return { error: 'Signup failed' };
   }
+  
+  logger.info('User signup successful', { 
+    userId: authData.user.id,
+    email: authData.user.email
+  });
   
   // Create a profile record for the new user using server-side API
   try {
@@ -58,45 +71,76 @@ export async function signUp(email: string, password: string, username: string) 
     return { error: 'Failed to create user profile' };
   }
 
-  // Return success, no verification needed
-  return { user: authData.user, message: 'Account created successfully' };
+  // Set session in auth store to ensure user is logged in immediately
+  if (authData.session) {
+    useAuthStore.getState().setSession(authData.session);
+    useAuthStore.getState().setUser(authData.user);
+    
+    // Try to fetch the profile and update the auth store
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', authData.user.id)
+      .single();
+      
+    if (profileData) {
+      useAuthStore.getState().setProfile(profileData as Profile);
+    }
+  }
+
+  // Return success, user is automatically signed in
+  return { user: authData.user };
 }
 
 /**
  * Sign in a user with email and password
  */
 export async function signIn(email: string, password: string) {
+  logger.info('User login attempt', { email });
+  
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
+    logger.error('Login failed', { email, error: error.message });
     return { error: error.message };
   }
 
   // Update the last_login timestamp
   if (data.user) {
+    logger.info('User login successful', { 
+      userId: data.user.id,
+      email: data.user.email,
+    });
+    
+    const timestamp = new Date().toISOString();
+    logger.debug('Updating last login timestamp', { userId: data.user.id, timestamp });
+    
     await supabase
       .from('profiles')
-      .update({ last_login: new Date().toISOString() })
+      .update({ last_login: timestamp })
       .eq('id', data.user.id);
       
-    // Fetch the user's profile and update the auth store
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', data.user.id)
-      .single();
+    // Update auth store with session data
+    if (data.session) {
+      useAuthStore.getState().setSession(data.session);
+      useAuthStore.getState().setUser(data.user);
       
-    if (profileData) {
-      useAuthStore.getState().setProfile(profileData as Profile);
+      // Fetch and set the user profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+        
+      if (profileData) {
+        useAuthStore.getState().setProfile(profileData as Profile);
+      }
     }
-    
-    // Update session state in auth store
-    useAuthStore.getState().setSession(data.session);
   }
-
+  
   return { user: data.user };
 }
 
@@ -104,15 +148,26 @@ export async function signIn(email: string, password: string) {
  * Sign out the current user
  */
 export async function signOut() {
+  const user = useAuthStore.getState().user;
+  const userId = user?.id;
+  
+  if (userId) {
+    logger.info('User signing out', { userId, email: user?.email });
+  } else {
+    logger.info('Sign out attempted with no active user');
+  }
+  
   const { error } = await supabase.auth.signOut();
   
   if (error) {
+    logger.error('Sign out failed', { userId, error: error.message });
     return { error: error.message };
   }
   
   // Clear session state in auth store
   useAuthStore.getState().clearSession();
   
+  logger.info('User signed out successfully', { userId });
   return { success: true };
 }
 
@@ -124,15 +179,29 @@ export async function getCurrentUser() {
   const storeUser = useAuthStore.getState().user;
   
   if (storeUser) {
+    logger.debug('Current user found in store', { userId: storeUser.id });
     return storeUser;
   }
+  
+  logger.debug('Checking with Supabase for current user');
   
   // If not in store, check with Supabase
   const { data, error } = await supabase.auth.getUser();
   
-  if (error || !data.user) {
+  if (error) {
+    logger.error('Error fetching current user', { error: error.message });
     return null;
   }
+  
+  if (!data.user) {
+    logger.debug('No authenticated user found');
+    return null;
+  }
+  
+  logger.info('User authenticated via session', { 
+    userId: data.user.id, 
+    email: data.user.email 
+  });
   
   // Update the auth store
   useAuthStore.getState().setUser(data.user);

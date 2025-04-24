@@ -1,26 +1,16 @@
-
-
-
-    {
-
+{
   "servers": {
-  
-  
-      
-  "sequential-thinking": {
+    "sequential-thinking": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     },
-       "Context7": {
+    "Context7": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"]
     },
-  
-   "supabase": {
+
+    "supabase": {
       "command": "npx",
       "args": [
         "-y",
@@ -28,6 +18,6 @@
         "--access-token",
         "sbp_942ae250b039131a082993f00eec65928dbaa934"
       ]
-    },
+    }
   }
 }

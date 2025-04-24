@@ -4,12 +4,8 @@
  */
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
 export function createClient(request: NextRequest) {
-  // Create a cookies instance
-  const cookieStore = cookies();
-  
   // Create a new response
   const response = NextResponse.next({
     request: {
@@ -24,10 +20,9 @@ export function createClient(request: NextRequest) {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value;
+          return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: Record<string, any>) {
-          cookieStore.set({ name, value, ...options });
           response.cookies.set({ 
             name, 
             value, 
@@ -35,7 +30,6 @@ export function createClient(request: NextRequest) {
           });
         },
         remove(name: string, options: Record<string, any>) {
-          cookieStore.set({ name, value: '', ...options });
           response.cookies.set({
             name,
             value: '',
